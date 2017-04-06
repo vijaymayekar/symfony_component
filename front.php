@@ -1,26 +1,21 @@
 <?php
 
-require_once __DIR__ . '/vendor/autoload.php';
-
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-
-
-$request = Request::createFromGlobals();
-$response = new Response();
+require_once __DIR__ . '/init.php';
 
 $path = $request->getPathInfo();
 
 $map = array(
-  '/hello' => __DIR__ . '/src/pages/hello.php',
-  '/bye' => __DIR__ . '/src/pages/bye.php',
+  '/hello' => 'hello',
+  '/bye' => 'bye',
 );
 
 if (isset($map[$path])) {
-  require $map[$path];
+  ob_start();
+  extract($request->query->all(), EXTR_SKIP);
+  include sprintf(__DIR__ . '/src/pages/%s.php', $map[$path]);
+  $response->setContent(ob_get_clean());
 } else {
-  $response->setStatusCode(404);
-  $response->setContent('Not Found');
+	$response->setContent('Not Found', 404);
 }
  
 $response->send();
